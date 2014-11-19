@@ -1,4 +1,3 @@
-// Test
 package musicsearch;
 
 import java.io.File;
