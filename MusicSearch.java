@@ -1,6 +1,7 @@
 package musicsearch;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class MusicSearch {
@@ -11,21 +12,42 @@ public class MusicSearch {
 		
 		while(true) {
 			System.out.print("What are you looking for (artist, album)? ");
-			String searchBy = in.next();
+			String searchBy = in.nextLine();
 			System.out.print("Enter search term: ");
-			String term = in.next();
+			String term = in.nextLine();
 			System.out.print("What's the path to your music library? ");
-			String path = in.next();
+			String path = in.nextLine();
+			
+			// Ensure specified music library path exists
+			File f = new File(path);
+			if(!f.exists()) {
+				System.out.println("Specified path doesn't exist.");
+				continue;
+			}
+			
+			// Ensure specified music library is a directory
+			if(!f.isDirectory()) {
+				System.out.println("Specified path isn't a directory.");
+				continue;
+			}
 			
 			if(searchBy.equalsIgnoreCase("artist")) {
+				
 				boolean success = artistSearch(term, path);
 				if(!success) {
+					
 					System.out.println("Artist not found.");
+					
 				}
 				break;
+				
 			} else if(searchBy.equalsIgnoreCase("album")) {
+				
 				//boolean success = albumSearch(term, path);
-				System.out.println("Album");
+				//if(!success) {
+					System.out.println("Album not found.");
+				//}
+			
 				break;
 			} else {
 				System.out.println("Invalid search type.");
@@ -34,74 +56,60 @@ public class MusicSearch {
 			
 		}
 		in.close();
-		
-		
+
 	}
 	
 	public static boolean artistSearch(String artist, String searchPath) {
 
-		String pathToArtist = null;
-
-		// Get list of all files & folders in path specified
-		File searchPathFolder = new File(searchPath);
-		String[] searchPathFiles = searchPathFolder.list();
+		ArrayList<String> list = new ArrayList<String>();
 
 		// Search through list of files & folders to look for artist
-		for(String filename : searchPathFiles) {
+		for(String filename : new File(searchPath).list()) {
 			
-			String absolutePath = searchPath + "/" + filename;
-			File file = new File(absolutePath);
+			File file = new File(searchPath + "/" + filename);
 
 			// Artist should be a directory
 			if(file.isDirectory()) {
-				if(file.getName().contains(artist)) {
-					pathToArtist = file.getPath();
-					break;
+				
+				// Filename contains (ignoring case) artist name
+				if(file.getName().toLowerCase().contains(artist.toLowerCase())) {
+					list.add(file.getPath());
 				}
 			}
 		}
 
-		// If we've gotten through all files/folders in the current path and haven't found the artist, it doesn't exist
-		if(pathToArtist == null) {
+		// If we've gotten through all files/folders in the specified path and haven't found the artist, it doesn't exist
+		if(list.isEmpty()) {
 			return false;
 		}
 		
-		File artistRoot = new File(pathToArtist);
-
-		// Get list of albums under artist
-		String[] albums = artistRoot.list();
-		for(String albumName : albums) {
+		for(String path : list) {
 			
-			String absAlbumPath = artistRoot + "/" + albumName;
-			File album = new File(absAlbumPath);
-
-			// Skip any non-directories
-			if(!album.isDirectory()) {
-				continue;
-			}
-
-			File[] songs = album.listFiles();
-
-			// Make sure there's stuff in the album
-			if(songs.length == 0) {
-				continue;
-			}
-			
-			
-			System.out.println("");
-			System.out.println(album.getPath());
-			System.out.println("");
-
-			for(File song : songs) {
-				// Only print out files
-				if(!song.isFile()) {
+			// Get list of files under artist's directory
+			String[] albums = new File(path).list();
+			for(String albumName : albums) {
+				
+				File album = new File(path + "/" + albumName);
+				
+				// Skip any non-directories
+				if(!album.isDirectory()) {
 					continue;
 				}
-				System.out.println(song.getName());
+				
+				System.out.println();
+				System.out.println(album.getPath());
+				System.out.println();
+				
+				for(File song : album.listFiles()) {
+					
+					// Skip directories
+					if(!song.isFile()) {
+						continue;
+					}
+					System.out.println(song.getName());
+				}
 			}
-
 		}
-
 
 		return true;
 	}
