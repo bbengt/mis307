@@ -4,6 +4,16 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Scanner;
 
+/*
+ * What's left to do: 
+ * 	-Implement album search
+ * 	-Javadoc
+ * 	-Code clean-up
+ * 	-Testing/bugfixes
+ * 	-Find how to return a boolean with songSearch() - if we have time
+ * 
+ */
+
 public class MusicSearch {
 
 	public static void main(String[] args) {
@@ -11,7 +21,7 @@ public class MusicSearch {
 		Scanner in = new Scanner(System.in);
 		
 		while(true) {
-			System.out.print("What are you looking for (artist, album)? ");
+			System.out.print("What are you looking for (artist, album, song)? ");
 			String searchBy = in.nextLine();
 			System.out.print("Enter search term: ");
 			String term = in.nextLine();
@@ -43,12 +53,16 @@ public class MusicSearch {
 				
 			} else if(searchBy.equalsIgnoreCase("album")) {
 				
-				//boolean success = albumSearch(term, path);
-				//if(!success) {
+				boolean success = albumSearch(term, path);
+				if(!success) {
 					System.out.println("Album not found.");
-				//}
+				}
 			
 				break;
+			} else if(searchBy.equalsIgnoreCase("song")) {
+				
+				songSearch(term, path);
+				
 			} else {
 				System.out.println("Invalid search type.");
 				System.out.println();
@@ -59,7 +73,7 @@ public class MusicSearch {
 
 	}
 	
-	public static boolean artistSearch(String artist, String searchPath) {
+	private static boolean artistSearch(String artist, String searchPath) {
 
 		ArrayList<String> list = new ArrayList<String>();
 
@@ -73,6 +87,11 @@ public class MusicSearch {
 				
 				// Filename contains (ignoring case) artist name
 				if(file.getName().toLowerCase().contains(artist.toLowerCase())) {
+					list.add(file.getPath());
+				}
+				
+				// Filename has underscores instead of spaces
+				if(file.getName().toLowerCase().contains(artist.toLowerCase().replaceAll(" ", "_"))) {
 					list.add(file.getPath());
 				}
 			}
@@ -113,4 +132,30 @@ public class MusicSearch {
 
 		return true;
 	}
+	
+	private static boolean albumSearch(String album, String path) {
+		return false;
+	}
+	
+	private static void songSearch(String song, String path) {
+		
+		File dir = new File(path);
+		for(String file : dir.list()) {
+			File f = new File(path + "/" + file);
+			if(f.isDirectory()) {
+				songSearch(song, f.getPath());
+			}
+			if(f.isFile()) {
+				if(f.getName().toLowerCase().contains(song.toLowerCase())) {
+					System.out.println(f.getPath());
+					continue; // Skip to next iteration of loop, otherwise we'll get a duplicate result printed with next if statement
+				}
+				if(f.getName().toLowerCase().contains(song.toLowerCase().replaceAll(" ", "_"))) {
+					System.out.println(f.getPath());
+				}
+			}
+		}
+		
+	}
+	
 }
