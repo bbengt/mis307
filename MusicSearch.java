@@ -10,7 +10,6 @@ import java.util.Scanner;
  * 	-Javadoc
  * 	-Code clean-up
  * 	-Testing/bugfixes
- * 	-Find how to return a boolean with songSearch() - if we have time
  * 
  */
 
@@ -21,6 +20,7 @@ public class MusicSearch {
 		Scanner in = new Scanner(System.in);
 		
 		while(true) {
+			
 			System.out.print("What are you looking for (artist, album, song)? ");
 			String searchBy = in.nextLine();
 			System.out.print("Enter search term: ");
@@ -61,7 +61,12 @@ public class MusicSearch {
 				break;
 			} else if(searchBy.equalsIgnoreCase("song")) {
 				
-				songSearch(term, path);
+				boolean success = songSearch(term, path);
+				if(!success) {
+					System.out.println("Song not found.");
+				}
+				
+				break;
 				
 			} else {
 				System.out.println("Invalid search type.");
@@ -74,13 +79,19 @@ public class MusicSearch {
 	}
 	
 	private static boolean artistSearch(String artist, String searchPath) {
+		
+		if(artist == null) {
+			System.out.println("Invalid artist.");
+			return false;
+		}
+		if(!new File(searchPath).exists()) {
+			System.out.println("Invalid search path.");
+			return false;
+		}
 
 		ArrayList<String> list = new ArrayList<String>();
 
-		// Search through list of files & folders to look for artist
-		for(String filename : new File(searchPath).list()) {
-			
-			File file = new File(searchPath + "/" + filename);
+		for(File file : new File(searchPath).listFiles()) {
 
 			// Artist should be a directory
 			if(file.isDirectory()) {
@@ -102,15 +113,13 @@ public class MusicSearch {
 			return false;
 		}
 		
+		// Search through each artist that matched the search pattern
 		for(String path : list) {
 			
-			// Get list of files under artist's directory
-			String[] albums = new File(path).list();
-			for(String albumName : albums) {
+			// Search through each album by the artist
+			for(File album : new File(path).listFiles()) {
 				
-				File album = new File(path + "/" + albumName);
-				
-				// Skip any non-directories
+				// Skip any non-directories (e.g. file in artist folder but not in an album folder)
 				if(!album.isDirectory()) {
 					continue;
 				}
@@ -137,25 +146,42 @@ public class MusicSearch {
 		return false;
 	}
 	
-	private static void songSearch(String song, String path) {
+	private static boolean songSearch(String song, String path) {
+		
+		if(song == null) {
+			System.out.println("Invalid song.");
+			return false;
+		}
+		if(!new File(path).exists()) {
+			System.out.println("Invalid path.");
+			return false;
+		}
+		
+		boolean success = false;
 		
 		File dir = new File(path);
-		for(String file : dir.list()) {
-			File f = new File(path + "/" + file);
-			if(f.isDirectory()) {
-				songSearch(song, f.getPath());
-			}
-			if(f.isFile()) {
-				if(f.getName().toLowerCase().contains(song.toLowerCase())) {
-					System.out.println(f.getPath());
-					continue; // Skip to next iteration of loop, otherwise we'll get a duplicate result printed with next if statement
+		for(File file : dir.listFiles()) {
+
+			if(file.isDirectory()) {
+				if(success) {
+					songSearch(song, file.getPath());
+				} else {
+					success = songSearch(song, file.getPath());
 				}
-				if(f.getName().toLowerCase().contains(song.toLowerCase().replaceAll(" ", "_"))) {
-					System.out.println(f.getPath());
+			}
+			if(file.isFile()) {
+				if(file.getName().toLowerCase().contains(song.toLowerCase())) {
+					System.out.println(file.getPath());
+					success = true;	
+					continue;
+				}
+				if(file.getName().toLowerCase().contains(song.toLowerCase().replaceAll(" ", "_"))) {
+					System.out.println(file.getPath());
+					success =  true;
 				}
 			}
 		}
-		
+		return success;
 	}
 	
 }
