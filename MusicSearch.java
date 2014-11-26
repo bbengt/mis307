@@ -24,6 +24,10 @@ public class MusicSearch {
 			String searchBy = in.nextLine();
 			if(searchBy.equalsIgnoreCase("quit"))
 				break;
+			if(!(searchBy.equalsIgnoreCase("artist") || searchBy.equalsIgnoreCase("album")) || searchBy.equalsIgnoreCase("song")) {
+				System.out.println("Invalid input.");
+				continue;
+			}
 			System.out.print("Enter search term: ");
 			String term = in.nextLine();
 			System.out.print("What's the path to your music library? ");
