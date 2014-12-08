@@ -3,16 +3,11 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Scanner;
-
-/*
- * What's left to do: 
- * 	
- * 	-Javadoc
- * 	-Code clean-up
- * 	-Testing/bugfixes
- * 
+/**
+ * Searches through a user-provided music library for an artist, album, or song and prints out any matches it finds
+ * @author Brian Bengtson, Dan Bodtke, Brandy Byrd, Jerry Chen, Carson Scovin
+ *
  */
-
 public class MusicSearch 
 {
 	public static void main(String[] args) 
@@ -28,7 +23,9 @@ public class MusicSearch
 			if(searchBy.equalsIgnoreCase("quit"))
 			{
 				System.out.println("_________________________________________________________________________________________________________________________________________________________________________________________________________________");
+				
 				break;
+
 			}
 			
 			if(!Arrays.asList("artist", "album", "song").contains(searchBy.toLowerCase())) 
@@ -38,7 +35,9 @@ public class MusicSearch
 				System.out.println("Invalid search type.");
 				System.out.println("_________________________________________________________________________________________________________________________________________________________________________________________________________________");
 				System.out.println();
+
 				continue;
+
 			}
 			
 			System.out.print("What's the path to your music library? ");
@@ -55,6 +54,7 @@ public class MusicSearch
 					System.out.println();
 								
 					continue;
+
 				}
 						
 				// Ensure specified music library is a directory
@@ -67,6 +67,7 @@ public class MusicSearch
 					System.out.println();
 								
 					continue;
+
 				}
 				
 			System.out.print("Enter search term: ");
@@ -83,7 +84,9 @@ public class MusicSearch
 					System.out.println("_________________________________________________________________________________________________________________________________________________________________________________________________________________");
 					System.out.println();
 				}		
+
 				continue;
+
 			} 
 			
 			else if(searchBy.equalsIgnoreCase("album")) 
@@ -94,9 +97,11 @@ public class MusicSearch
 					System.out.println("Album not found.");
 					System.out.println("_________________________________________________________________________________________________________________________________________________________________________________________________________________");
 					System.out.println();
-				}		
+				}	
+
 				continue;
-				} 
+
+			} 
 			
 			else if(searchBy.equalsIgnoreCase("song")) 
 			{
@@ -107,28 +112,40 @@ public class MusicSearch
 					System.out.println("_________________________________________________________________________________________________________________________________________________________________________________________________________________");
 					System.out.println();
 				}	
+
 				continue;
-				} 
+
+			} 
 			
-				else 
-				{
-					System.out.println();
-					System.out.println("Invalid input.");
-					System.out.println("_________________________________________________________________________________________________________________________________________________________________________________________________________________");
-					System.out.println();
-				}
+			else 
+			{
+				System.out.println();
+				System.out.println("Invalid input.");
+				System.out.println("_________________________________________________________________________________________________________________________________________________________________________________________________________________");
+				System.out.println();
+			}
 		}
 		in.close();
 	}
 	
-	private static boolean artistSearch(String artist, String searchPath) 
+	/**
+	 * Searches through the music library specified in 'path' for any artists that contain the string in 'artist'
+	 * @param artist
+	 * 	Term to look for
+	 * @param path
+	 * 	Path to music library to search
+	 * @return
+	 * 	true if any matches are found
+	 * 	false if no matches are found
+	 */
+	private static boolean artistSearch(String artist, String path) 
 	{
 		if(artist == null) 
 		{
 			System.out.println("Invalid artist.");
 			return false;
 		}
-		if(!new File(searchPath).exists()) 
+		if(!new File(path).exists()) 
 		{
 			System.out.println("Invalid search path.");
 			return false;
@@ -136,7 +153,7 @@ public class MusicSearch
 		
 		ArrayList<String> list = new ArrayList<String>();
 
-		for(File file : new File(searchPath).listFiles()) 
+		for(File file : new File(path).listFiles()) 
 		{
 
 			// Artist should be a directory
@@ -145,9 +162,16 @@ public class MusicSearch
 				// Filename contains (ignoring case) artist name or if Filename has underscores instead of spaces
 				if(file.getName().toLowerCase().contains(artist.toLowerCase())||file.getName().toLowerCase().contains(artist.toLowerCase().replaceAll(" ", "_"))) 
 				{
-					list.add(file.getPath());
 					
-					System.out.println("The artist, " + file.getName() + ", was found.");
+					//Replace all underscores in the artist name with spaces before printing out
+					String name = file.getName().replaceAll("_", " ");
+					
+					// Only print artist name if we haven't already found this artist (ex. library had the artist with underscores and spaces both)
+					if(!(list.contains(file.getPath().replaceAll("_", " ")) || list.contains(file.getPath().replaceAll(" ", "_")))) {
+						System.out.println("The artist, " + name + ", was found.");
+					}
+					
+					list.add(file.getPath());
 				}
 			}
 		}
@@ -156,24 +180,21 @@ public class MusicSearch
 		if(list.isEmpty()) 
 			return false;
 		
-		// Search through each artist that matched the search pattern
-		for(String path : list) 
+		for(String artistName : list) 
 		{
-			// Search through each album by the artist
-			for(File album : new File(path).listFiles()) 
+			for(File album : new File(artistName).listFiles()) 
 			{
 				
-				// Skip any non-directories (e.g. file in artist folder but not in an album folder)
+				// Ignore loose files (songs not in a album/directory)
 				if(!album.isDirectory()) 
-					continue;
-				
+					continue;				
 				
 				System.out.println();
-				System.out.println("Album: " + album.getName());
+				System.out.println("Album: " + album.getName().replaceAll("_", " "));
 				System.out.println();
 				System.out.println("The path to this album is: " + album.getPath());
 				System.out.println();
-				System.out.println("The content found in " + album.getName() + " includes: ");
+				System.out.println("The content found in " + album.getName().replaceAll("_", " ") + " includes: ");
 				for(File song : album.listFiles()) {
 					
 					// Skip directories
@@ -190,26 +211,39 @@ public class MusicSearch
 		return true;
 	}
 	
+	/**
+	 * Searches through the music library specified in 'searchPath' for the string in 'album'
+	 * @param album
+	 * 	Term to search for
+	 * @param searchPath
+	 * 	Path to search in
+	 * @return
+	 * 	true if a match is found
+	 * 	false if no match is found
+	 */
 	private static boolean albumSearch(String album, String searchPath) 
 	{
 		boolean success = false;
 
 		for(File artists : new File(searchPath).listFiles()) 
 		{	
-			if(!artists.isDirectory())
+			// Ignore any loose files in the search path
+			if(!artists.isDirectory()) {
 				continue;
+			}
 			
 			for(File albums : artists.listFiles())
 			{
 				if(albums.isDirectory())
 				{
+					// Album name matches (ignore case) with spaces or underscores
 					if(albums.getName().toLowerCase().contains(album.toLowerCase())||albums.getName().toLowerCase().contains(album.toLowerCase().replaceAll(" ", "_")))
 					{
-						System.out.println("The album, " + albums.getName() + ", was found.");
+						System.out.println("The album, " + albums.getName().replaceAll("_", " ") + ", was found.");
 						System.out.println();
 						System.out.println("The path to this album is: " + albums.getPath());
 						System.out.println();
-						System.out.println("The content found in " + albums.getName() + " includes: ");
+						System.out.println("The content found in " + albums.getName().replaceAll("_", " ") + " includes: ");
 							
 						for(File song : albums.listFiles()) 
 						{
@@ -217,7 +251,6 @@ public class MusicSearch
 								continue;
 				
 							System.out.println(song.getName());
-							
 							
 							success = true;
 						}
@@ -234,10 +267,17 @@ public class MusicSearch
 		
 		return success;
 	}
-
-
-
-
+	
+	/**
+	 * Recursively searches for the string in 'song' in the music library in 'path'
+	 * @param song
+	 * 	Term to search for
+	 * @param path
+	 * 	Path to search in
+	 * @return
+	 * 	true if a match is found
+	 * 	false if no match is found
+	 */
 	private static boolean songSearch(String song, String path) 
 	{
 		if(song == null) 
@@ -267,6 +307,7 @@ public class MusicSearch
 			}
 			if(file.isFile()) 
 			{
+				// Filename includes (ignore case) the search term (matches either spaces or underscores)
 				if(file.getName().toLowerCase().contains(song.toLowerCase())||file.getName().toLowerCase().contains(song.toLowerCase().replaceAll(" ", "_"))) 
 				{
 					System.out.println("The song, " + file.getName() + ", was found.");
