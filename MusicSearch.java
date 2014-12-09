@@ -187,7 +187,7 @@ public class MusicSearch
 				
 				// Ignore loose files (songs not in a album/directory)
 				if(!album.isDirectory()) 
-					continue;				
+					continue;
 				
 				System.out.println();
 				System.out.println("Album: " + album.getName().replaceAll("_", " "));
@@ -254,15 +254,12 @@ public class MusicSearch
 							
 							success = true;
 						}
-					}	
+						System.out.println("_________________________________________________________________________________________________________________________________________________________________________________________________________________");
+						System.out.println();					}	
 				}
 			}
 		}
-		if(success == true)
-		{
-			System.out.println("_________________________________________________________________________________________________________________________________________________________________________________________________________________");
-			System.out.println();	
-		}
+		
 
 		
 		return success;
